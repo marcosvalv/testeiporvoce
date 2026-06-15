@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Testei por Você — Reviews honestos de minhas compras pessoais/title>
+<meta name="description" content="Reviews honestos de quem compra pra usar. Sem produto patrocinado, sem papo de fabricante.">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap');
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --bg:#080808;--bg2:#111111;--bg3:#181818;
+  --gold:#C9A96E;--gold-dim:#8A6E3E;
+  --text:#F2EDE4;--text-dim:#9A9187;--text-muted:#4A4540;
+  --border:rgba(201,169,110,0.15);--border-dim:rgba(242,237,228,0.08);
+}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;position:relative;}
+canvas#three-canvas{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;}
+.site-nav{position:relative;z-index:10;display:flex;align-items:center;justify-content:space-between;padding:20px 32px;border-bottom:1px solid var(--border-dim);background:rgba(8,8,8,0.85);backdrop-filter:blur(12px);position:sticky;top:0;}
+.nav-brand{display:flex;flex-direction:column;gap:2px;cursor:pointer;}
+.nav-logo{font-family:'Playfair Display',serif;font-size:16px;font-weight:700;letter-spacing:-0.3px;display:flex;align-items:baseline;}
+.nav-logo-main{color:var(--text);}
+.nav-logo-por{color:var(--text-muted);font-weight:400;font-style:italic;margin:0 4px;}
+.nav-logo-voce{color:var(--gold);}
+.nav-tagline{font-size:10px;color:var(--text-muted);letter-spacing:1px;text-transform:uppercase;}
+.nav-links{display:flex;gap:28px;list-style:none;}
+.nav-links a{font-size:11px;font-weight:500;color:var(--text-dim);text-decoration:none;letter-spacing:1.5px;text-transform:uppercase;transition:color 0.3s;cursor:pointer;}
+.nav-links a:hover{color:var(--gold);}
+.page{display:none;position:relative;z-index:5;}
+.page.active{display:block;}
+.hero{min-height:480px;display:flex;flex-direction:column;justify-content:center;padding:56px 32px 44px;}
+.hero-eyebrow{font-size:11px;font-weight:500;letter-spacing:2.5px;text-transform:uppercase;color:var(--gold);margin-bottom:20px;opacity:0;display:flex;align-items:center;gap:10px;}
+.hero-eyebrow::before{content:'';display:block;width:24px;height:1px;background:var(--gold);}
+.hero-title{font-family:'Playfair Display',serif;font-size:clamp(34px,5vw,58px);font-weight:700;line-height:1.08;letter-spacing:-1.5px;color:var(--text);max-width:560px;opacity:0;transform:translateY(30px);}
+.hero-title em{font-style:italic;color:var(--gold);}
+.hero-sub{font-size:15px;font-weight:300;color:var(--text-dim);max-width:400px;line-height:1.75;margin-top:18px;opacity:0;transform:translateY(20px);}
+.hero-actions{display:flex;align-items:center;gap:20px;margin-top:32px;opacity:0;}
+.hero-cta{display:inline-flex;align-items:center;gap:10px;padding:12px 24px;background:transparent;border:1px solid var(--gold);color:var(--gold);font-family:'Inter',sans-serif;font-size:11px;font-weight:500;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;transition:all 0.3s;}
+.hero-cta:hover{background:var(--gold);color:var(--bg);}
+.hero-cta svg{width:13px;height:13px;transition:transform 0.3s;}
+.hero-cta:hover svg{transform:translateX(4px);}
+.hero-cta-ghost{font-size:11px;font-weight:400;color:var(--text-muted);cursor:pointer;background:none;border:none;font-family:'Inter',sans-serif;transition:color 0.3s;}
+.hero-cta-ghost:hover{color:var(--text-dim);}
+.stats-strip{display:flex;border-top:1px solid var(--border-dim);border-bottom:1px solid var(--border-dim);position:relative;z-index:5;}
+.stat-item{flex:1;padding:18px 24px;border-right:1px solid var(--border-dim);opacity:0;}
+.stat-item:last-child{border-right:none;}
+.stat-num{font-family:'Playfair Display',serif;font-size:24px;font-weight:700;color:var(--gold);line-height:1;}
+.stat-label{font-size:10px;font-weight:400;color:var(--text-muted);letter-spacing:1px;text-transform:uppercase;margin-top:4px;}
+.section-header{display:flex;align-items:center;justify-content:space-between;padding:28px 32px 16px;position:relative;z-index:5;}
+.section-label{font-size:10px;font-weight:500;letter-spacing:2px;text-transform:uppercase;color:var(--text-muted);display:flex;align-items:center;gap:10px;}
+.section-label::after{content:'';display:block;width:40px;height:1px;background:var(--border-dim);}
+.section-link{font-size:11px;color:var(--gold);cursor:pointer;background:none;border:none;font-family:'Inter',sans-serif;transition:opacity 0.3s;}
+.section-link:hover{opacity:0.7;}
+.articles-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border-dim);position:relative;z-index:5;}
+.article-card{background:var(--bg);padding:28px 32px;cursor:pointer;transition:background 0.3s;opacity:0;transform:translateY(16px);}
+.article-card:hover{background:var(--bg2);}
+.article-card.featured{grid-column:span 2;padding:36px 32px;display:grid;grid-template-columns:1fr 1fr;gap:32px;align-items:center;}
+.article-card.em-breve{cursor:default;opacity:0.45 !important;}
+.article-card.em-breve:hover{background:var(--bg);}
+.em-breve-tag{display:inline-block;font-size:10px;font-weight:500;letter-spacing:1.8px;text-transform:uppercase;color:var(--text-muted);margin-bottom:12px;border:1px solid var(--border-dim);padding:3px 8px;}
+.featured-label{display:inline-flex;align-items:center;gap:6px;font-size:10px;font-weight:500;letter-spacing:1.5px;text-transform:uppercase;color:var(--bg);background:var(--gold);padding:4px 10px;margin-bottom:14px;}
+.card-tag{display:inline-block;font-size:10px;font-weight:500;letter-spacing:1.8px;text-transform:uppercase;color:var(--gold);margin-bottom:12px;border:1px solid var(--border);padding:3px 8px;}
+.card-title{font-family:'Playfair Display',serif;font-size:19px;font-weight:600;line-height:1.25;color:var(--text);margin-bottom:10px;}
+.article-card.featured .card-title{font-size:24px;}
+.card-excerpt{font-size:13px;color:var(--text-dim);line-height:1.65;font-weight:300;}
+.card-meta{display:flex;align-items:center;gap:12px;margin-top:18px;}
+.card-meta-item{font-size:11px;color:var(--text-muted);letter-spacing:0.5px;}
+.card-arrow{margin-left:auto;width:28px;height:28px;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;transition:all 0.3s;flex-shrink:0;}
+.article-card:not(.em-breve):hover .card-arrow{background:var(--gold);border-color:var(--gold);}
+.card-arrow svg{width:12px;height:12px;color:var(--text-dim);}
+.article-card:not(.em-breve):hover .card-arrow svg{color:var(--bg);}
+.featured-visual{display:flex;flex-direction:column;gap:10px;}
+.featured-score-row{display:flex;align-items:center;gap:12px;padding:12px 16px;background:var(--bg2);border-left:2px solid var(--gold);}
+.featured-score-name{font-size:12px;color:var(--text-dim);flex:1;font-weight:400;}
+.featured-score-bar-wrap{width:80px;height:3px;background:var(--bg3);position:relative;}
+.featured-score-bar{position:absolute;top:0;left:0;height:100%;background:var(--gold);}
+.featured-score-val{font-size:12px;font-weight:600;color:var(--gold);font-family:'Playfair Display',serif;min-width:24px;text-align:right;}
+.article-page{padding:0 32px 40px;position:relative;z-index:5;}
+.article-header{padding:36px 0 28px;border-bottom:1px solid var(--border-dim);margin-bottom:28px;}
+.article-header h1{font-family:'Playfair Display',serif;font-size:clamp(24px,4vw,40px);font-weight:700;line-height:1.1;letter-spacing:-1px;margin:12px 0 14px;max-width:580px;}
+.article-lead{font-size:15px;color:var(--text-dim);line-height:1.75;font-weight:300;max-width:540px;}
+.article-meta{display:flex;align-items:center;gap:16px;margin-top:16px;flex-wrap:wrap;}
+.article-meta span{font-size:11px;color:var(--text-muted);letter-spacing:0.5px;}
+.verdict-badge{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:500;letter-spacing:1px;text-transform:uppercase;color:var(--bg);background:var(--gold);padding:4px 10px;}
+.article-body p{font-size:14px;line-height:1.85;color:var(--text-dim);margin-bottom:18px;max-width:580px;font-weight:300;}
+.article-body h2{font-family:'Playfair Display',serif;font-size:21px;font-weight:600;color:var(--text);margin:32px 0 12px;}
+.article-body strong{color:var(--text);font-weight:500;}
+.data-callout{border-left:2px solid var(--gold);padding:14px 20px;background:var(--bg2);margin:24px 0;max-width:560px;}
+.data-callout p{font-size:13px;color:var(--text-dim);margin:0;font-weight:300;line-height:1.6;}
+.data-callout strong{color:var(--gold);}
+.pros-cons-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:24px 0;max-width:580px;}
+.pros-box,.cons-box{padding:18px;background:var(--bg2);}
+.pros-box{border-top:2px solid rgba(90,180,100,0.5);}
+.cons-box{border-top:2px solid rgba(201,169,110,0.4);}
+.pros-cons-title{font-size:10px;font-weight:500;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:12px;}
+.pros-box .pros-cons-title{color:rgba(90,180,100,0.8);}
+.cons-box .pros-cons-title{color:var(--gold-dim);}
+.pros-cons-item{font-size:13px;color:var(--text-dim);font-weight:300;line-height:1.5;padding:6px 0;border-bottom:1px solid var(--border-dim);}
+.pros-cons-item:last-child{border-bottom:none;}
+.comparison-table{width:100%;border-collapse:collapse;margin:24px 0;font-size:13px;max-width:600px;}
+.comparison-table th{text-align:left;padding:10px 14px;font-size:10px;font-weight:500;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-muted);border-bottom:1px solid var(--border-dim);}
+.comparison-table td{padding:13px 14px;border-bottom:1px solid var(--border-dim);color:var(--text-dim);font-weight:300;}
+.comparison-table tr:hover td{background:var(--bg2);color:var(--text);}
+.comparison-table .winner{color:var(--gold);font-weight:500;}
+.score-badge{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;font-size:12px;font-weight:600;background:rgba(201,169,110,0.1);color:var(--gold);font-family:'Playfair Display',serif;}
+.products-cta{margin-top:48px;padding:28px 32px;background:var(--bg2);position:relative;overflow:hidden;}
+.products-cta::before{content:'';position:absolute;top:0;left:32px;right:32px;height:1px;background:var(--gold);opacity:0.4;}
+.products-cta-eyebrow{font-size:10px;font-weight:500;letter-spacing:2px;text-transform:uppercase;color:var(--gold);margin-bottom:6px;display:flex;align-items:center;gap:8px;}
+.products-cta-eyebrow::before{content:'';display:block;width:16px;height:1px;background:var(--gold);}
+.products-cta-title{font-family:'Playfair Display',serif;font-size:19px;font-weight:600;color:var(--text);margin-bottom:22px;}
+.products-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+.product-card{background:var(--bg3);border:1px solid var(--border-dim);padding:16px;cursor:pointer;transition:all 0.3s;}
+.product-card:hover{border-color:var(--gold);background:rgba(201,169,110,0.03);}
+.product-badge{font-size:10px;font-weight:500;letter-spacing:1px;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;}
+.product-name{font-size:13px;font-weight:400;color:var(--text);line-height:1.45;margin-bottom:10px;}
+.product-price{font-size:17px;font-weight:700;color:var(--gold);font-family:'Playfair Display',serif;}
+.product-price span{font-family:'Inter',sans-serif;font-size:10px;color:var(--text-muted);font-weight:400;margin-left:3px;}
+.product-cta-btn{display:block;width:100%;margin-top:12px;padding:8px;background:transparent;border:1px solid var(--border);color:var(--text-dim);font-size:10px;font-weight:500;letter-spacing:1.2px;text-transform:uppercase;cursor:pointer;transition:all 0.3s;font-family:'Inter',sans-serif;}
+.product-card:hover .product-cta-btn{background:var(--gold);color:var(--bg);border-color:var(--gold);}
+.back-btn{display:inline-flex;align-items:center;gap:8px;font-size:10px;font-weight:500;letter-spacing:1.2px;text-transform:uppercase;color:var(--text-muted);cursor:pointer;padding:8px 0;transition:color 0.3s;margin-bottom:4px;background:none;border:none;font-family:'Inter',sans-serif;}
+.back-btn:hover{color:var(--gold);}
+.niche-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border-dim);position:relative;z-index:5;}
+.niche-card{background:var(--bg);padding:26px 24px;cursor:pointer;transition:background 0.3s;}
+.niche-card:hover{background:var(--bg2);}
+.niche-card.em-breve{cursor:default;opacity:0.4;}
+.niche-card.em-breve:hover{background:var(--bg);}
+.niche-icon-wrap{width:36px;height:36px;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;margin-bottom:14px;font-size:16px;}
+.niche-title{font-family:'Playfair Display',serif;font-size:16px;font-weight:600;color:var(--text);margin-bottom:5px;}
+.niche-count{font-size:11px;color:var(--text-muted);}
+.footer-strip{padding:18px 32px;border-top:1px solid var(--border-dim);display:flex;align-items:center;justify-content:space-between;position:relative;z-index:5;}
+.footer-brand{font-family:'Playfair Display',serif;font-size:13px;color:var(--text-muted);}
+.footer-brand em{font-style:italic;color:var(--gold-dim);}
+.footer-strip p{font-size:11px;color:var(--text-muted);}
+</style>
+</head>
+<body>
+<canvas id="three-canvas"></canvas>
+
+<nav class="site-nav">
+  <div class="nav-brand" onclick="showPage('home')">
+    <div class="nav-logo">
+      <span class="nav-logo-main">Testei</span>
+      <span class="nav-logo-por"> por </span>
+      <span class="nav-logo-voce">Você</span>
+    </div>
+    <div class="nav-tagline">testeiporvoce.com.br</div>
+  </div>
+  <ul class="nav-links">
+    <li><a onclick="showPage('home')">Início</a></li>
+    <li><a onclick="showArticle('comparativo')">Comparativos</a></li>
+    <li><a onclick="showPage('nichos')">Nichos</a></li>
+  </ul>
+</nav>
+
+<!-- ========== HOME ========== -->
+<div id="page-home" class="page active">
+  <div class="hero">
+    <p class="hero-eyebrow" id="eyebrow">Reviews honestos · Mercado Livre</p>
+    <h1 class="hero-title" id="hero-title">Eu comprei.<br>Eu usei.<br><em>Você decide.</em></h1>
+    <p class="hero-sub" id="hero-sub">Cada review aqui começa com uma compra de verdade. Sem produto patrocinado, sem papo de fabricante.</p>
+    <div class="hero-actions" id="hero-actions">
+      <button class="hero-cta" onclick="showArticle('comparativo')">
+        Ver comparativos
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </button>
+      <button class="hero-cta-ghost" onclick="showPage('nichos')">Explorar nichos →</button>
+    </div>
+  </div>
+
+  <div class="stats-strip">
+    <div class="stat-item" id="stat1"><div class="stat-num">100%</div><div class="stat-label">Compras próprias</div></div>
+    <div class="stat-item" id="stat2"><div class="stat-num">45+</div><div class="stat-label">Dias de uso mínimo</div></div>
+    <div class="stat-item" id="stat3"><div class="stat-num">0</div><div class="stat-label">Produtos patrocinados</div></div>
+    <div class="stat-item" id="stat4"><div class="stat-num">ML</div><div class="stat-label">Links afiliado</div></div>
+  </div>
+
+  <div class="section-header">
+    <span class="section-label">Em destaque</span>
+    <button class="section-link" onclick="showArticle('comparativo')">Ver todos →</button>
+  </div>
+
+  <div class="articles-grid">
+
+    <!-- CARD FEATURED — Oppo vs Samsung -->
+    <div class="article-card featured" onclick="showArticle('comparativo')">
+      <div>
+        <div class="featured-label">Testei por 45 dias</div>
+        <!-- TITULO DO CARD PRINCIPAL: edite o texto abaixo -->
+        <div class="card-title">Oppo Find X9 vs Samsung S24 Ultra: troquei de marca por necessidade e não me arrependi</div>
+        <p class="card-excerpt">Meu S24 Ultra afundou na piscina. A Samsung consertou de graça após pressão — mas demorou 40 dias. Nesse meio tempo, arrisquei numa marca quase desconhecida no Brasil.</p>
+        <div class="card-meta">
+          <span class="card-meta-item">9 min</span>
+          <span class="card-meta-item">·</span>
+          <span class="card-meta-item">Smartphones</span>
+          <div class="card-arrow">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </div>
+        </div>
+      </div>
+      <div class="featured-visual">
+        <div class="featured-score-row"><span class="featured-score-name">Oppo Find X9 — câmera</span><div class="featured-score-bar-wrap"><div class="featured-score-bar" style="width:93%"></div></div><span class="featured-score-val">9.3</span></div>
+        <div class="featured-score-row"><span class="featured-score-name">Oppo Find X9 — bateria</span><div class="featured-score-bar-wrap"><div class="featured-score-bar" style="width:95%"></div></div><span class="featured-score-val">9.5</span></div>
+        <div class="featured-score-row"><span class="featured-score-name">Samsung S24 Ultra — UX</span><div class="featured-score-bar-wrap"><div class="featured-score-bar" style="width:92%"></div></div><span class="featured-score-val">9.2</span></div>
+        <div class="featured-score-row"><span class="featured-score-name">Oppo Find X9 — software</span><div class="featured-score-bar-wrap"><div class="featured-score-bar" style="width:65%"></div></div><span class="featured-score-val">6.5</span></div>
+      </div>
+    </div>
+
+    <!-- CARD EM BREVE — Adega -->
+    <div class="article-card em-breve">
+      <span class="em-breve-tag">Em breve</span>
+      <!-- TITULO EM BREVE: edite o texto abaixo -->
+      <div class="card-title">Brastemp vs Electrolux vs Consul: qual adega comprar?</div>
+      <p class="card-excerpt">30 dias de teste com termômetro nas duas zonas. Em publicação em breve.</p>
+      <div class="card-meta">
+        <span class="card-meta-item">Eletrodomésticos</span>
+      </div>
+    </div>
+
+    <!-- CARD 3 — adicione futuros artigos aqui -->
+    <div class="article-card em-breve">
+      <span class="em-breve-tag">Em breve</span>
+      <div class="card-title">Mais reviews chegando</div>
+      <p class="card-excerpt">Novos testes em andamento. Volte em breve.</p>
+    </div>
+
+  </div>
+</div>
+
+<!-- ========== ARTIGO ========== -->
+<div id="page-article" class="page">
+  <div class="article-page" id="article-content"></div>
+</div>
+
+<!-- ========== NICHOS ========== -->
+<div id="page-nichos" class="page">
+  <div style="padding:36px 32px 16px;position:relative;z-index:5;">
+    <p class="hero-eyebrow" style="opacity:1;margin-bottom:8px;">Explorar por categoria</p>
+    <h1 style="font-family:'Playfair Display',serif;font-size:34px;font-weight:700;letter-spacing:-1px;color:var(--text);">Nichos</h1>
+  </div>
+  <div class="niche-grid">
+    <div class="niche-card" onclick="showArticle('comparativo')">
+      <div class="niche-icon-wrap">📱</div>
+      <!-- NOME DO NICHO: edite abaixo -->
+      <div class="niche-title">Smartphones</div>
+      <p class="niche-count">1 artigo · 2 aparelhos testados</p>
+    </div>
+    <!-- NICHO EM BREVE: Vinhos -->
+    <div class="niche-card em-breve">
+      <div class="niche-icon-wrap">🍷</div>
+      <div class="niche-title">Vinhos & Adegas</div>
+      <p class="niche-count">Em breve</p>
+    </div>
+    <div class="niche-card em-breve"><div class="niche-icon-wrap">🏠</div><div class="niche-title">Casa Inteligente</div><p class="niche-count">Em breve</p></div>
+    <div class="niche-card em-breve"><div class="niche-icon-wrap">🍳</div><div class="niche-title">Cozinha</div><p class="niche-count">Em breve</p></div>
+    <div class="niche-card em-breve"><div class="niche-icon-wrap">💪</div><div class="niche-title">Fitness em Casa</div><p class="niche-count">Em breve</p></div>
+    <div class="niche-card em-breve"><div class="niche-icon-wrap">🐾</div><div class="niche-title">Pets</div><p class="niche-count">Em breve</p></div>
+  </div>
+</div>
+
+<div class="footer-strip">
+  <div class="footer-brand">Testei <em>por</em> Você</div>
+  <p>Conteúdo independente · Links de afiliado Mercado Livre</p>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script>
+// ============================================================
+// ARTIGOS — edite o conteúdo aqui para atualizar os textos
+// ============================================================
+const ARTICLES = {
+  comparativo: {
+    tag: 'Comparativo',
+    verdict: 'Indefinido — depende da sua prioridade',
+    // TITULO DO ARTIGO: edite abaixo
+    title: 'Oppo Find X9 vs Samsung S24 Ultra: troquei de marca por necessidade e não me arrependi',
+    lead: 'Não foi uma troca planejada. Meu S24 Ultra afundou na piscina apesar da certificação IP68. O que veio depois foi uma maratona com a Samsung — e uma aposta numa marca que quase ninguém conhece no Brasil.',
+    body: `
+      <p>Vou contar exatamente o que aconteceu, porque o contexto importa pra avaliação do Oppo.</p>
+      <h2>O problema com o S24 Ultra e a certificação IP68</h2>
+      <p>O Samsung Galaxy S24 Ultra tem certificação <strong>IP68</strong> — resistência à imersão em até 1,5 metro por 30 minutos em condições de laboratório. Na prática, mergulhei na piscina com ele e estragou. A certificação não é garantia, é uma indicação de resistência em condições controladas.</p>
+      <div class="data-callout"><p>A Samsung primeiro tentou me cobrar pelo conserto um valor <strong>maior do que comprar um S24 Ultra novo</strong>. Após pedido formal de isenção — com argumento de que o aparelho tem certificação de resistência à água — eles cederam e isentaram o reparo. O aparelho estava fora do prazo de garantia de 1 ano, mas a argumentação funcionou.</p></div>
+      <p>O conserto durou <strong>aproximadamente 40 dias</strong> no total. Celular é ferramenta essencial — 40 dias sem ele não era opção. Precisei comprar outro.</p>
+      <h2>Por que arriscar no Oppo?</h2>
+      <p>O Find X9 apareceu como uma opção com hardware de ponta — chipset Snapdragon 8 Elite, câmera Hasselblad, bateria de 6.000 mAh — por um preço abaixo dos tops da Samsung e Apple. A marca quase não tem assistência técnica no Brasil, cases são difíceis de achar, e o ColorOS é desconhecido pra maioria. Mas o hardware no papel era irresistível.</p>
+      <h2>45 dias depois: o que ficou claro</h2>
+      <p>Performance de ambos é excelente — não é um critério diferenciador nessa faixa de preço. Qualquer tarefa do dia a dia, jogos pesados, multitarefa: os dois entregam sem reclamar.</p>
+      <div class="pros-cons-grid">
+        <div class="pros-box">
+          <div class="pros-cons-title">Oppo Find X9 vence em</div>
+          <div class="pros-cons-item">Bateria — autonomia visivelmente superior, carregamento rápido impressionante</div>
+          <div class="pros-cons-item">Câmera — pós-processamento mais natural e detalhado em luz boa</div>
+          <div class="pros-cons-item">Design — mais leve e menos volumoso que o S24 Ultra</div>
+        </div>
+        <div class="cons-box">
+          <div class="pros-cons-title">Samsung S24 Ultra vence em</div>
+          <div class="pros-cons-item">Software — One UI é muito mais polido e intuitivo que ColorOS</div>
+          <div class="pros-cons-item">Usabilidade em tela — gestos, organização, personalização do sistema</div>
+          <div class="pros-cons-item">Ecossistema — assistência, cases, integração com outros dispositivos</div>
+        </div>
+      </div>
+      <h2>O problema central do Oppo: o ColorOS</h2>
+      <p>O hardware do Find X9 é excelente. O software é o calcanhar de Aquiles. O ColorOS ainda tem uma curva de adaptação alta pra quem vem do One UI da Samsung — menus menos intuitivos, alguns gestos que não funcionam como esperado, e uma sensação geral de que a interface não foi pensada para o usuário brasileiro.</p>
+      <p>Se a Oppo evoluir o ColorOS para se aproximar da experiência do One UI, o Find X9 vira uma opção muito mais óbvia. Por enquanto, a câmera e a bateria são os motivos pra considerar — e são motivos fortes.</p>
+      <h2>Comparativo direto</h2>
+      <table class="comparison-table">
+        <thead><tr><th>Critério</th><th>Oppo Find X9</th><th>Samsung S24 Ultra</th></tr></thead>
+        <tbody>
+          <tr><td>Chipset</td><td class="winner">Snapdragon 8 Elite</td><td>Snapdragon 8 Gen 3</td></tr>
+          <tr><td>Bateria</td><td class="winner">6.000 mAh</td><td>5.000 mAh</td></tr>
+          <tr><td>Câmera (pós-proc.)</td><td class="winner">Hasselblad — mais natural</td><td>Processamento agressivo</td></tr>
+          <tr><td>Software</td><td>ColorOS — curva alta</td><td class="winner">One UI — mais polido</td></tr>
+          <tr><td>Ecossistema BR</td><td>Limitado</td><td class="winner">Amplo</td></tr>
+          <tr><td>Nota geral</td><td><span class="score-badge">7.8</span></td><td><span class="score-badge">8.4</span></td></tr>
+        </tbody>
+      </table>`,
+    // PRODUTOS DO CTA: edite nome, preço e link abaixo
+    products: [
+      { badge: 'Testado — artigo completo', name: 'Oppo Find X9 — 256GB', price: 'Ver preço', label: 'Buscar no ML', link: 'https://www.mercadolivre.com.br/busca?q=oppo+find+x9' },
+      { badge: 'Comparado neste artigo', name: 'Samsung Galaxy S24 Ultra', price: 'Ver preço', label: 'Buscar no ML', link: 'https://www.mercadolivre.com.br/busca?q=samsung+s24+ultra' },
+      { badge: 'Acessório essencial', name: 'Case para Oppo Find X9', price: 'Ver preço', label: 'Buscar no ML', link: 'https://www.mercadolivre.com.br/busca?q=case+oppo+find+x9' }
+    ]
+  }
+};
+
+function buildProductsCta(products) {
+  return `
+    <div class="products-cta">
+      <p class="products-cta-eyebrow">Se esse assunto te interessa</p>
+      <p class="products-cta-title">Você pode gostar de um desses produtos</p>
+      <div class="products-row">
+        ${products.map(p=>`
+          <div class="product-card" onclick="window.open('${p.link}','_blank')">
+            <p class="product-badge">${p.badge}</p>
+            <p class="product-name">${p.name}</p>
+            <p class="product-price">${p.price} <span>no ML</span></p>
+            <button class="product-cta-btn">${p.label} →</button>
+          </div>`).join('')}
+      </div>
+    </div>`;
+}
+
+function showArticle(key) {
+  const a = ARTICLES[key];
+  document.getElementById('article-content').innerHTML = `
+    <button class="back-btn" onclick="showPage('home')">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      Voltar
+    </button>
+    <div class="article-header">
+      <span class="card-tag">${a.tag}</span>
+      <h1>${a.title}</h1>
+      <p class="article-lead">${a.lead}</p>
+      <div class="article-meta">
+        <span>Testei por Você</span><span>·</span><span>testeiporvoce.com.br</span>
+        <div class="verdict-badge">Veredito: ${a.verdict}</div>
+      </div>
+    </div>
+    <div class="article-body">${a.body}</div>
+    ${buildProductsCta(a.products)}`;
+  showPage('article');
+}
+
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  gsap.fromTo('#page-'+name,{opacity:0,y:10},{opacity:1,y:0,duration:0.4,ease:'power2.out'});
+  if(name==='home') animateHome();
+}
+
+function animateHome() {
+  const tl = gsap.timeline({delay:0.05});
+  tl.to('#eyebrow',{opacity:1,duration:0.5})
+    .to('#hero-title',{opacity:1,y:0,duration:0.65,ease:'power3.out'},'-=0.2')
+    .to('#hero-sub',{opacity:1,y:0,duration:0.55},'-=0.35')
+    .to('#hero-actions',{opacity:1,duration:0.4},'-=0.2')
+    .to(['#stat1','#stat2','#stat3','#stat4'],{opacity:1,duration:0.4,stagger:0.08},'-=0.1')
+    .to('.article-card',{opacity:function(i,el){return el.classList.contains('em-breve')?0.45:1;},y:0,duration:0.5,stagger:0.1},'-=0.2');
+}
+
+function initThree() {
+  const canvas = document.getElementById('three-canvas');
+  const W = window.innerWidth, H = window.innerHeight;
+  const renderer = new THREE.WebGLRenderer({canvas,alpha:true,antialias:true});
+  renderer.setSize(W,H);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(55,W/H,0.1,1000);
+  camera.position.z=5;
+  const COUNT=100;
+  const positions=new Float32Array(COUNT*3);
+  const velocities=[];
+  for(let i=0;i<COUNT;i++){
+    positions[i*3]=(Math.random()-0.5)*13;
+    positions[i*3+1]=(Math.random()-0.5)*9;
+    positions[i*3+2]=(Math.random()-0.5)*5;
+    velocities.push({x:(Math.random()-0.5)*0.0025,y:(Math.random()-0.5)*0.0025,z:(Math.random()-0.5)*0.002});
+  }
+  const geo=new THREE.BufferGeometry();
+  geo.setAttribute('position',new THREE.BufferAttribute(positions,3));
+  const mat=new THREE.PointsMaterial({color:0xC9A96E,size:0.045,transparent:true,opacity:0.45});
+  const points=new THREE.Points(geo,mat);
+  scene.add(points);
+  const lineMat=new THREE.LineBasicMaterial({color:0xC9A96E,transparent:true,opacity:0.06});
+  let linesMesh=null;
+  function buildLines(){
+    const lp=[];const pos=geo.attributes.position.array;
+    for(let i=0;i<COUNT;i++)for(let j=i+1;j<COUNT;j++){
+      const dx=pos[i*3]-pos[j*3],dy=pos[i*3+1]-pos[j*3+1],dz=pos[i*3+2]-pos[j*3+2];
+      if(Math.sqrt(dx*dx+dy*dy+dz*dz)<2.4){lp.push(pos[i*3],pos[i*3+1],pos[i*3+2],pos[j*3],pos[j*3+1],pos[j*3+2]);}
+    }
+    if(linesMesh)scene.remove(linesMesh);
+    const lg=new THREE.BufferGeometry();
+    lg.setAttribute('position',new THREE.BufferAttribute(new Float32Array(lp),3));
+    linesMesh=new THREE.LineSegments(lg,lineMat);scene.add(linesMesh);
+  }
+  let frame=0;
+  function animate(){
+    requestAnimationFrame(animate);frame++;
+    const pos=geo.attributes.position.array;
+    for(let i=0;i<COUNT;i++){
+      pos[i*3]+=velocities[i].x;pos[i*3+1]+=velocities[i].y;pos[i*3+2]+=velocities[i].z;
+      if(Math.abs(pos[i*3])>6.5)velocities[i].x*=-1;
+      if(Math.abs(pos[i*3+1])>4.5)velocities[i].y*=-1;
+      if(Math.abs(pos[i*3+2])>2.5)velocities[i].z*=-1;
+    }
+    geo.attributes.position.needsUpdate=true;
+    if(frame%4===0)buildLines();
+    points.rotation.y+=0.0004;if(linesMesh)linesMesh.rotation.y+=0.0004;
+    renderer.render(scene,camera);
+  }
+  buildLines();animate();
+}
+initThree();
+animateHome();
+</script>
+</body>
+</html>
